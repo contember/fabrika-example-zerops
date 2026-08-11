@@ -57,7 +57,8 @@ zerops:
     #
     # Every duration is a QUOTED Go duration and none is under 10s. The published JSON schema types these
     # as integers and the platform refuses an integer (`cannot unmarshal !!int into time.Duration`); it
-    # also rejects anything outside [10s, 1h]. Both verified live — see docs/reference/zerops-platform.md.
+    # also rejects anything outside [10s, 1h]. Both were verified live; details are recorded at
+    # https://github.com/contember/fabrika-platform/blob/main/docs/reference/zerops-platform.md.
     deploy:
       readinessCheck:
         httpGet:

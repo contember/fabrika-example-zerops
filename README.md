@@ -128,7 +128,7 @@ and nothing else can reach the port.
 
 ## What has been proven
 
-On 2026-08-11 Zerops built public repository commit `4274a60` from this repository root. Its build
+On 2026-08-11 Zerops built the public repository's `main` branch from this repository root. Its build
 container ran `bun install --frozen-lockfile`, completed every build command, and prepared and uploaded
 a 47.3 MiB artifact. This proves the repository-root layout, descriptor discovery, and standalone
 lockfile in a real Zerops build environment.
