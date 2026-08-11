@@ -126,13 +126,16 @@ NOTES_DATABASE_URL=postgres://…  NOTES_APP_ID=notes  FABRIKA_IAM_ISSUER=https:
 Requests then need an `X-Fabrika-Token` the IAM service minted — in production the proxy puts it there,
 and nothing else can reach the port.
 
-## What has not been proven
+## What has been proven
 
-Nobody has run this against a real Zerops account. The import document is valid against Zerops'
-published JSON schema, `zerops.yaml` is valid against its own published schema, and the deploy's call
-sequence is asserted against the real driver — but "well-formed" is not "it deploys".
+On 2026-08-11 Zerops built public repository commit `4274a60` from this repository root. Its build
+container ran `bun install --frozen-lockfile`, completed every build command, and prepared and uploaded
+a 47.3 MiB artifact. This proves the repository-root layout, descriptor discovery, and standalone
+lockfile in a real Zerops build environment.
 
-The real Operations custom domain and proxy path isolation are therefore also unproven. In addition,
-Zerops owns the build filesystem and the current provider does not publish its source maps to
-Operations; that remaining release-artifact work is tracked in
+The disposable probe service omitted the app database and runtime environment, so its later deploy
+failed before the app could become active. A complete deploy, the readiness gate, the real Operations
+custom domain, and proxy path isolation remain unproven. Zerops also owns the build filesystem and the
+current provider does not publish its source maps to Operations; that remaining release-artifact work
+is tracked in
 [fabrika-platform backlog 36](https://github.com/contember/fabrika-platform/blob/main/docs/backlog/36-complete-zerops-release-artifact-correlation.md).

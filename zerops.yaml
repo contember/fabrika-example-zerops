@@ -15,7 +15,7 @@
 #
 # Not here. This file is committed and plaintext, so it carries only what is true for every deployment
 # of this app: ports, and `${service_variable}` REFERENCES that the platform resolves at container
-# start. Two categories live elsewhere, both addressed BY SERVICE through the env API (ADR-0004):
+# start. Two categories live elsewhere, both addressed BY SERVICE through the env API:
 #
 #   per-environment config   FABRIKA_IAM_ISSUER   the IAM service's public origin — the `iss` of every
 #                                                 token this app verifies, and the JWKS it fetches.
