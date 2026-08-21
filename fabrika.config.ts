@@ -27,7 +27,7 @@ import { notesGates } from './fabrika.gates'
 import { NOTES_APP_ID, notesSchema } from './fabrika.schema'
 
 /** The runtime service — the one the app's code deploys to. Also the `zerops.yaml` setup name. */
-export const NOTES_SERVICE = 'notesapi'
+export const NOTES_SERVICE = 'wu2probeapi'
 /** Its database. Reached at `notesdb:5432` over the project's private network; never publicly routed. */
 export const NOTES_DATABASE_SERVICE = 'notesdb'
 
@@ -43,7 +43,7 @@ export const NOTES_UPSTREAM = `${NOTES_SERVICE}:3000`
  * There is no `pattern` in the schema, so nothing but `assertZeropsHostnames` catches a violation.
  *
  * Note also what is NOT in these names: an environment suffix. One project per environment means
- * `notesapi` in staging and `notesapi` in production are different services on different private
+ * `wu2probeapi` in staging and `wu2probeapi` in production are different services on different private
  * networks, and staging genuinely cannot reach production's database.
  */
 const services = (ctx: ZeropsResourceContext): ZeropsServiceSpec[] => [
@@ -87,7 +87,7 @@ export default defineApp({
 		 * DOCUMENTATION ON ZEROPS, NOT A DEPLOY STEP. The Zerops plan has no `sync-secrets` — the platform
 		 * is the system of record for secret values and they change without a redeploy, so pushing them at
 		 * deploy time would silently overwrite a GUI edit. These are written once, as
-		 * service-level `envSecrets` on `notesapi`, through the env API. Listing them here says what the
+		 * service-level `envSecrets` on `wu2probeapi`, through the env API. Listing them here says what the
 		 * app needs; nothing in this repo transports a value.
 		 */
 		secrets: ['NOTES_SESSION_PEPPER', 'NOTES_WEBHOOK_SIGNING_KEY'],

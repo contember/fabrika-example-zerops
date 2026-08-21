@@ -18,7 +18,7 @@ import type { AppSchema } from '@fabrika/auth-core'
  * registry, the minted token's `aud`, and the `?app=` pin in the proxy's generated Caddy route. Get it
  * wrong and the proxy asks IAM for a token for an app the request is not for.
  */
-export const NOTES_APP_ID = 'notes'
+export const NOTES_APP_ID = 'wu2probe'
 
 export const notesSchema: AppSchema = {
 	// One scope dimension. Values are opaque app-owned ids — IAM stores and matches them, never

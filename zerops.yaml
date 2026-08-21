@@ -2,7 +2,7 @@
 # namespace-owned `postgres` service declared by `useSharedPostgres()`.
 
 zerops:
-  - setup: notesapi
+  - setup: wu2probeapi
     build:
       base:
         - alpine/bun@1.3
@@ -43,4 +43,4 @@ zerops:
         # Must match `useSharedPostgres()` exactly — a test asserts it. See the sibling zerops.yaml for
         # why the TLS port, the database and the TLS mode are named rather than left to the driver.
         NOTES_DATABASE_URL: ${postgres_connectionTlsString}/${postgres_dbName}?sslmode=require
-        NOTES_APP_ID: notes
+        NOTES_APP_ID: wu2probe
