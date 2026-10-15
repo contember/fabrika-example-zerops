@@ -1,4 +1,4 @@
-<!-- Generated from skill/ of @fabrika/app 0.0.4. Change those files, not this one. -->
+<!-- Generated from skill/ of @fabrika/app 0.4.6. Change those files, not this one. -->
 
 # Fabrika application rules
 
@@ -333,21 +333,20 @@ the SPA is added with it.
 		"test": "bun test --isolate"
 	},
 	"dependencies": {
-		"@fabrika/app": "^0.0.4",
-		"@fabrika/db": "^0.0.4",
-		"@fabrika/provider-zerops": "^0.0.4",
-		"@fabrika/proxy-core": "^0.0.4",
-		"@fabrika/ui": "^0.0.4",
-		"@sentry/browser": "10.69.0",
+		"@fabrika/app": "^0.4.6",
+		"@fabrika/db": "^0.4.6",
+		"@fabrika/provider-zerops": "^0.4.6",
+		"@fabrika/proxy-core": "^0.4.6",
+		"@fabrika/ui": "^0.4.6",
 		"kysely": "0.29.6",
 		"react": "^19.0.0",
 		"react-dom": "^19.0.0",
 		"zod": "^3.25.76"
 	},
 	"devDependencies": {
-		"@fabrika/check": "^0.0.4",
-		"@fabrika/cli": "^0.0.4",
-		"@fabrika/platform": "^0.0.4",
+		"@fabrika/check": "^0.4.6",
+		"@fabrika/cli": "^0.4.6",
+		"@fabrika/platform": "^0.4.6",
 		"@happy-dom/global-registrator": "^20.11.2",
 		"@types/bun": "latest",
 		"@types/react": "^19.0.0",
@@ -362,8 +361,9 @@ the SPA is added with it.
   Bun still links the workspace copies.
 - `build:web` builds the SPA: add it, `build-web.ts`, `web/`, the contract's `site` mount and the `bun run build:web`
   line of `zerops.yaml` when the application gets an SPA, and not before.
-- `kysely` is there for the generated schema's types. `@sentry/browser` reports the SPA's errors to Operations, from
-  the DSN and release the framework serves at `<prefix>/__fabrika-config.json`. The same file carries
+- `kysely` is there for the generated schema's types. The SPA reports its errors to Operations by itself:
+  `FabrikaProvider` reads the DSN, release and environment the framework serves at `<prefix>/__fabrika-config.json`
+  and sends every uncaught error and unhandled rejection there; add no error-reporting SDK. The same file carries
   `public: { <VARIABLE>: <value> }`: each form challenge's `siteKey`, and the variables the SPA mount lists in
   `c.spa(prefix, { …, public: ['SIGNUP_URL'] })`. A page reads a per-environment public value (a site key, a link
   target) there, never as a build-time constant; it holds no other variable, and the contract refuses a secret in it.
@@ -652,6 +652,7 @@ const built = await Bun.build({
 	outdir,
 	target: 'browser',
 	define: { 'process.env.NODE_ENV': JSON.stringify('production') },
+	sourcemap: 'external',
 	plugins: [shellSlicePlugin({ root: import.meta.dir })],
 })
 if (!built.success) {
@@ -671,6 +672,12 @@ await Bun.write(
   the rows are passed in.
 - The last step points the page's assets at the SPA's prefix (`/`): the mount answers `index.html` for every path
   under it, so a deep link such as `/tasks/<id>` renders. `define` gives React's production build.
+- `sourcemap: 'external'` writes each script's map beside it, and the page names none. The platform build uploads the
+  maps to Operations for the release the page reports, so an error's frames show the original source; the mount
+  never serves a `.map` file (404). Keep the maps external: `inline` would ship the source to every visitor.
+- **Errors.** `FabrikaProvider` reports the page's uncaught errors and unhandled rejections to Operations, with the
+  release and the environment, through the DSN the mount serves; without a DSN (local development, a test) it reports
+  nothing. An application that must not report passes `reportErrors={false}`.
 - Set text through JSX, never `dangerouslySetInnerHTML` or `innerHTML`. Same-origin calls carry the session cookie.
 - **Who is signed in.** Every member SPA serves `<prefix>/__fabrika-me.json` to the person it admitted:
   `{ label, email, actions: { app, scopes } }`. `useCaller()` (`@fabrika/app/react`) answers `{ label, email,
@@ -1523,9 +1530,24 @@ message. The codes you meet most:
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `query_refused`      | the data layer refused a statement or an operation: `undeclared_reach`, `sql_read_only`, `unknown_column`, `read_only`, `sql_outside_transaction` …; the reason's text names the rule |
 | `capability_refused` | a capability of another kind, dimension or action than the call takes (`wrong_capability`, `wrong_action`, `out_of_reach`), or one kept past its request (`ended`, `foreign_work`)    |
-| `handler_failed`     | your handler threw something else; the log has no more, so test the handler                                                                                                           |
+| `handler_failed`     | your handler threw something else; the log has no more: the Operations issue has the stack, or test the handler                                                                       |
 
-With an Operations DSN the same 500 is a `RequestFailed` issue in Operations. A job attempt names its failure with the
+With an Operations DSN the same 500 is a `RequestFailed` issue in Operations. Its event also carries what your handler
+threw: the error's type, its message, its stack and its `cause` chain. Read the stack there, not in the log. A crash
+outside a request (an uncaught exception, an unhandled rejection, a failed start) is an issue too, titled by the error.
+
+The framework removes the values of your secrets and anything shaped like a credential (a token, a key, a password in a
+URL) from the message before it leaves. It cannot recognize personal data or a secret it was not told about:
+
+- never put an e-mail address, a name, a record's text or any other personal data into an error message; name the
+  record by its id;
+- never put a secret, a token or a request header into an error message;
+- name an application variable that holds a secret so its name says so (`STRIPE_SECRET_KEY`, `MAIL_API_TOKEN`): only
+  such a name tells the framework to remove its value;
+- keep the original error as `cause` when you rethrow (`throw new Error('could not load the invoice', { cause })`), so
+  the chain shows both.
+
+A job attempt names its failure with the
 same codes and reasons: `fabrika job run` prints `job <name> failed after 1 attempt: query_refused: undeclared_reach`,
 its log line adds the text, and `kit.runJob` answers `{ status: 'failed', code, reason }`. A `DatabaseError` carries
 only the SQLSTATE: `23505` is a unique violation, `23503` a foreign key, `23502` a null in a `NOT NULL` column.
@@ -3638,7 +3660,8 @@ if (root !== null) {
 - `FabrikaProvider` holds the clients of the mounts the page calls. A hook takes a procedure of a client
   (`api.tasks.get`) as the typed name of the call and runs it on the provider's client of that mount; a test hands the
   provider a client over the test kit instead (below). An SPA mounted under a prefix passes it: `spa="/app"`. Its bare
-  prefix (`/app`) redirects to `/app/`, so a link may name either.
+  prefix (`/app`) redirects to `/app/`, so a link may name either. It also reports the page's uncaught errors to
+  Operations (`reportErrors={false}` turns that off); never add an error-reporting SDK.
 - `createRouter` answers typed paths: `href('task', { id })`, `navigate('project', { orgId, projectId })`, `<Link
   to="task" params={{ id }}>`, and `useRoute()`, the match or `null`. `<Router>` makes every plain `<a href>` under the
   SPA navigate without a reload: the kit's components render links that way. Pass `{ base: '/app' }` for a prefix.
