@@ -1,4 +1,4 @@
-<!-- Generated from skill/ of @fabrika/app 0.8.0. Change those files, not this one. -->
+<!-- Generated from skill/ of @fabrika/app 0.8.1. Change those files, not this one. -->
 
 # Fabrika application rules
 
@@ -348,20 +348,20 @@ the SPA is added with it.
 		"test": "bun test --isolate"
 	},
 	"dependencies": {
-		"@fabrika/app": "0.8.0",
-		"@fabrika/db": "0.8.0",
-		"@fabrika/provider-zerops": "0.8.0",
-		"@fabrika/proxy-core": "0.8.0",
-		"@fabrika/ui": "0.8.0",
+		"@fabrika/app": "0.8.1",
+		"@fabrika/db": "0.8.1",
+		"@fabrika/provider-zerops": "0.8.1",
+		"@fabrika/proxy-core": "0.8.1",
+		"@fabrika/ui": "0.8.1",
 		"kysely": "0.29.6",
 		"react": "^19.0.0",
 		"react-dom": "^19.0.0",
 		"zod": "^3.25.76"
 	},
 	"devDependencies": {
-		"@fabrika/check": "0.8.0",
-		"@fabrika/cli": "0.8.0",
-		"@fabrika/platform": "0.8.0",
+		"@fabrika/check": "0.8.1",
+		"@fabrika/cli": "0.8.1",
+		"@fabrika/platform": "0.8.1",
 		"@happy-dom/global-registrator": "^20.11.2",
 		"@types/bun": "latest",
 		"@types/react": "^19.0.0",
@@ -574,9 +574,9 @@ zerops:
         - bun run build:web
 ```
 
-The platform's build runs the tests, writes the entrypoint, runs `fabrika-check` and the type check. Its start script
-runs `fabrika db migrate`, `fabrika db codegen --verify` and `fabrika db test-isolation` before the server: the
-application is not ready until every generated test passes. It writes every `FABRIKA_*` variable; never set one.
+The platform's build runs the tests, writes the entrypoint, runs `fabrika-check` and the type check. Its init commands
+run `fabrika db migrate`, `fabrika db codegen --verify` and `fabrika db test-isolation` before the server starts: a
+version does not go live until every generated test passes. It writes every `FABRIKA_*` variable; never set one.
 
 ## The SPA (added when the application has one)
 
