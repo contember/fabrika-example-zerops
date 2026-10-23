@@ -1,4 +1,4 @@
-<!-- Generated from skill/ of @fabrika/app 0.8.1. Change those files, not this one. -->
+<!-- Generated from skill/ of @fabrika/app 0.8.2. Change those files, not this one. -->
 
 # Fabrika application rules
 
@@ -348,22 +348,22 @@ the SPA is added with it.
 		"test": "bun test --isolate"
 	},
 	"dependencies": {
-		"@fabrika/app": "0.8.1",
-		"@fabrika/db": "0.8.1",
-		"@fabrika/provider-zerops": "0.8.1",
-		"@fabrika/proxy-core": "0.8.1",
-		"@fabrika/ui": "0.8.1",
+		"@fabrika/app": "0.8.2",
+		"@fabrika/db": "0.8.2",
+		"@fabrika/provider-zerops": "0.8.2",
+		"@fabrika/proxy-core": "0.8.2",
+		"@fabrika/ui": "0.8.2",
 		"kysely": "0.29.6",
 		"react": "^19.0.0",
 		"react-dom": "^19.0.0",
 		"zod": "^3.25.76"
 	},
 	"devDependencies": {
-		"@fabrika/check": "0.8.1",
-		"@fabrika/cli": "0.8.1",
-		"@fabrika/platform": "0.8.1",
+		"@fabrika/check": "0.8.2",
+		"@fabrika/cli": "0.8.2",
+		"@fabrika/platform": "0.8.2",
 		"@happy-dom/global-registrator": "^20.11.2",
-		"@types/bun": "latest",
+		"@types/bun": "^1.4.3",
 		"@types/react": "^19.0.0",
 		"@types/react-dom": "^19.0.0",
 		"typescript": "^5.9.3"
@@ -2347,7 +2347,14 @@ that says so): it records an outbox row and kicks the job (below). `references/p
   (RFC 8058), so a mailbox offers one-click unsubscribe. The URL is a public procedure of your own with a signed token
   (`ctx.url('api.mail.unsubscribe', { query: { t: ctx.tokens.sign('unsubscribe', claims, { days: 400 }) } })`,
   `references/endpoint.md`). There are no free headers. A transport without the header refuses the message.
-- The idempotency key covers the attachments and the unsubscribe URL: a repeated key with other content is refused.
+- `broadcast: true` marks one message of a send to many recipients (a newsletter, an announcement to every student),
+  as opposed to mail a recipient's own action triggers (a sign-in link, a confirmation). Providers keep the two apart
+  and pause an account whose transactional channel carries broadcast mail, so mark every message of a bulk send. It
+  needs `unsubscribe`. A transport without `ctx.mail.capabilities.broadcast` refuses it as `invalid_message`. Under
+  `mailer: 'installation'` the capability is true even where the installation's provider sends none; the first
+  message then fails `invalid_message`, so stop a bulk send at its first refusal instead of failing every row.
+- The idempotency key covers the attachments, the unsubscribe URL and `broadcast`: a repeated key with other content
+  is refused.
 - `idempotencyKey` is 1 to 200 visible ASCII characters, unique per message in the application environment, and
   derived from the outbox row (`intake-link-<link id>`), never random. `ctx.mail` puts a prefix of the installation
   and the environment in front of it, so no other application on the same provider account shares it.
